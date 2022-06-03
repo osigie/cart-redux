@@ -1,17 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { uiActions } from "./ui-slice";
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
     items: [],
     totalQuantity: 0,
     totalAmount: 0,
+    check:false
   },
   reducers: {
+    replaceCart(state,action){
+state.totalQuantity = action.payload.totalQuantity
+state.items = action.payload.items
+    },
     addItemToCart(state, action) {
       const newItem = action.payload;
       state.totalQuantity++;
       const existingItem = state.items.find((item) => item.id === newItem.id);
+      state.check = true
+
       if (!existingItem) {
         state.items.push({
           id: newItem.id,
@@ -28,6 +34,7 @@ const cartSlice = createSlice({
     removeFromCart(state, action) {
       const id = action.payload;
       state.totalQuantity--;
+      state.check = true
       const existingItem = state.items.find((item) => item.id === id);
       if (existingItem.quantity === 1) {
         state.items = state.items.filter((item) => item.id !== id);
@@ -39,53 +46,7 @@ const cartSlice = createSlice({
   },
 });
 
-export const sendCardData = (cart) => {
-  return async (dispatch) => {
-    dispatch(
-      uiActions.showNotification({
-        title: "Sending....",
-        status: "pending",
-        message: "Sending cart data!",
-      })
-    );
 
-    const sendData = async () => {
-      const response = await fetch(
-        "https://redux-59ee1-default-rtdb.firebaseio.com/cart.json",
-        {
-          method: "PUT",
-          body: JSON.stringify(cart),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Sending cart failed!");
-      }
-    };
-
-    try {
-      await sendData();
-      dispatch(
-        uiActions.showNotification({
-          title: "Success",
-          status: "Success",
-          message: "Send cart data successfully!",
-        })
-      );
-      // const data = await response.json();
-    } catch (error) {
-      sendCardData().catch((error) => {
-        dispatch(
-          uiActions.showNotification({
-            title: "error",
-            status: "error",
-            message: "Sending cart data failed!",
-          })
-        );
-      });
-    }
-  };
-};
 
 export const cartActions = cartSlice.actions;
 export default cartSlice;
