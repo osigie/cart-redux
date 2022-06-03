@@ -3,8 +3,10 @@ import Layout from "./components/Layout/Layout";
 import Products from "./components/Shop/Products";
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect } from "react";
-import { uiActions } from "./components/store/ui-slice";
 import Notification from "./components/UI/Notification";
+import {sendCardData} from "./components/store/cart-slice"
+
+let dSend = true;
 
 function App() {
   const dispatch = useDispatch();
@@ -13,48 +15,13 @@ function App() {
   const cart = useSelector((store) => store.cart);
 
   useEffect(() => {
-    const sendCardData = async () => {
-      dispatch(
-        uiActions.showNotification({
-          title: "Sending....",
-          status: "pending",
-          message: "Sending cart data!",
-        })
-      );
-      const response = await fetch(
-        "https://redux-59ee1-default-rtdb.firebaseio.com/cart.json",
-        {
-          method: "PUT",
-          body: JSON.stringify(cart),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Sending cart failed!");
-      }
-
-      dispatch(
-        uiActions.showNotification({
-          title: "Success",
-          status: "Success",
-          message: "Send cart data successfully!",
-        })
-      );
-
-      const data = await response.json();
-    };
-
-    sendCardData().catch((error) => {
-      dispatch(
-        uiActions.showNotification({
-          title: "error",
-          status: "error",
-          message: "Sending cart data failed!",
-        })
-      );
-    });
+    if (dSend) {
+      dSend = false;
+      return;
+    }
+dispatch(sendCardData(cart))
+ 
   }, [cart]);
-
 
   return (
     <>
